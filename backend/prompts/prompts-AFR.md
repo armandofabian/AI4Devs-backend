@@ -69,3 +69,9 @@ Permite modificar la fase actual del proceso de entrevista en la que se encuentr
 Actualiza el campo `current_interview_step` en la aplicación (`application`) correspondiente al candidato.
 
 ---
+
+Prompt 6
+
+Ahora vamos a probar nuestro endpoint para actualizar la etapa del candidato con ID 1 a la etapa 2 (Entrevista técnica):
+
+curl -X PUT http://localhost:3010/candidates/1/stage -H "Content-Type: application/json" -d '{"stage": 2}'
