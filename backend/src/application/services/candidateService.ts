@@ -3,6 +3,9 @@ import { validateCandidateData } from '../validator';
 import { Education } from '../../domain/models/Education';
 import { WorkExperience } from '../../domain/models/WorkExperience';
 import { Resume } from '../../domain/models/Resume';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const addCandidate = async (candidateData: any) => {
     try {
@@ -61,5 +64,53 @@ export const findCandidateById = async (id: number): Promise<Candidate | null> =
     } catch (error) {
         console.error('Error al buscar el candidato:', error);
         throw new Error('Error al recuperar el candidato');
+    }
+};
+
+/**
+ * Actualiza la etapa de entrevista para un candidato específico
+ * @param candidateId ID del candidato
+ * @param stageId ID de la nueva etapa de entrevista
+ * @returns true si la actualización fue exitosa, false si no se encontró el candidato o aplicación
+ */
+export const updateCandidateInterviewStage = async (candidateId: number, stageId: number): Promise<boolean> => {
+    try {
+        // Verificar si el candidato existe
+        const candidate = await prisma.candidate.findUnique({
+            where: { id: candidateId }
+        });
+
+        if (!candidate) {
+            throw new Error(`Candidato con ID ${candidateId} no encontrado`);
+        }
+
+        // Verificar si la etapa de entrevista existe
+        const interviewStep = await prisma.interviewStep.findUnique({
+            where: { id: stageId }
+        });
+
+        if (!interviewStep) {
+            throw new Error(`Etapa de entrevista con ID ${stageId} no encontrada`);
+        }
+
+        // Buscar aplicaciones activas del candidato
+        const application = await prisma.application.findFirst({
+            where: { candidateId }
+        });
+
+        if (!application) {
+            return false; // El candidato no tiene aplicaciones
+        }
+
+        // Actualizar la etapa de entrevista en la aplicación
+        await prisma.application.update({
+            where: { id: application.id },
+            data: { currentInterviewStep: stageId }
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error al actualizar la etapa de entrevista:', error);
+        throw error;
     }
 };

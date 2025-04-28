@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addCandidate, getCandidateById } from '../presentation/controllers/candidateController';
+import { addCandidate, getCandidateById, updateCandidateStage } from '../presentation/controllers/candidateController';
 
 const router = Router();
 
@@ -18,5 +18,13 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/:id', getCandidateById);
+
+/**
+ * @route PUT /candidates/:id/stage
+ * @description Actualiza la etapa del proceso de entrevista de un candidato
+ * @param {string} id - ID del candidato
+ * @param {number} stage - ID de la nueva etapa de entrevista
+ */
+router.put('/:id/stage', updateCandidateStage);
 
 export default router;

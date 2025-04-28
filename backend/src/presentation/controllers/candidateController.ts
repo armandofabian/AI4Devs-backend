@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { addCandidate, findCandidateById } from '../../application/services/candidateService';
+import { addCandidate, findCandidateById, updateCandidateInterviewStage } from '../../application/services/candidateService';
 
 export const addCandidateController = async (req: Request, res: Response) => {
     try {
@@ -28,6 +28,48 @@ export const getCandidateById = async (req: Request, res: Response) => {
         res.json(candidate);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+/**
+ * Controlador para actualizar la etapa de entrevista de un candidato
+ * @param req Request - Incluye el ID del candidato y la nueva etapa
+ * @param res Response
+ */
+export const updateCandidateStage = async (req: Request, res: Response) => {
+    try {
+        const candidateId = parseInt(req.params.id);
+        const stageId = parseInt(req.body.stage);
+
+        if (isNaN(candidateId)) {
+            return res.status(400).json({ error: 'ID de candidato inválido' });
+        }
+
+        if (isNaN(stageId)) {
+            return res.status(400).json({ error: 'ID de etapa inválido' });
+        }
+
+        const updated = await updateCandidateInterviewStage(candidateId, stageId);
+        
+        if (!updated) {
+            return res.status(404).json({ 
+                error: 'No se pudo actualizar la etapa', 
+                message: 'Candidato no encontrado o no tiene una aplicación activa' 
+            });
+        }
+
+        res.status(200).json({ 
+            message: 'Etapa del candidato actualizada con éxito',
+            candidateId,
+            newStage: stageId
+        });
+    } catch (error) {
+        console.error('Error al actualizar etapa del candidato:', error);
+        if (error instanceof Error) {
+            res.status(500).json({ error: `Error al actualizar: ${error.message}` });
+        } else {
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
     }
 };
 
